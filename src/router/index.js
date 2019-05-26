@@ -51,10 +51,37 @@ export const constantRoutes = [
       path: 'dashboard',
       name: 'Dashboard',
       component: () => import('@/views/dashboard/index'),
-      meta: { title: 'Dashboard', icon: 'dashboard' }
+      meta: { title: '首页', icon: 'dashboard' }
     }]
   },
 
+  {
+    path: '/system',
+    component: Layout,
+    redirect: '/system/user',
+    name: 'System',
+    meta: { title: '系统管理', icon: 'example' },
+    children: [
+      {
+        path: 'user',
+        name: 'User',
+        component: () => import('@/views/system/user/index'),
+        meta: { title: '用户管理', icon: 'user' }
+      },
+      {
+        path: 'role',
+        name: 'Role',
+        component: () => import('@/views/system/role/index'),
+        meta: { title: '角色管理', icon: 'tree' }
+      },
+      {
+        path: 'perm',
+        name: 'Perm',
+        component: () => import('@/views/system/perm/index'),
+        meta: { title: '权限管理', icon: 'tree' }
+      }
+    ]
+  },
   {
     path: '/example',
     component: Layout,
