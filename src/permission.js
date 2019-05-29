@@ -22,21 +22,27 @@ router.beforeEach(async(to, from, next) => {
 
   if (hasToken) {
     if (to.path === '/login') {
-      // if is logged in, redirect to the home page
+      // 如果登录过，直接跳转到首页
       next({ path: '/' })
       NProgress.done()
     } else {
-      const hasGetUserInfo = store.getters.name
-      if (hasGetUserInfo) {
+      // const hasGetUserInfo = store.getters.name
+      const hasRoles = store.getters.roles && store.getters.roles.length > 0
+      if (hasRoles) {
         next()
       } else {
         try {
-          // get user info
-          await store.dispatch('user/getInfo')
-
-          next()
+          // 如果没有角色信息，则取查询
+          const { roles } = await store.dispatch('user/getInfo')
+          // 根据角色生成可访问路由映射
+          const accessRoutes = await store.dispatch('permission/generateRoutes', roles)
+          // 动态添加可访问路由
+          router.addRoutes(accessRoutes)
+          // hack method 以确保addRoutes是完整的
+          // 设置replace: true，这样导航就不会留下历史记录
+          next({ ...to, replace: true })
         } catch (error) {
-          // remove token and go to login page to re-login
+          // 删除令牌，进入登录页面重新登录
           await store.dispatch('user/resetToken')
           Message.error(error || 'Has Error')
           next(`/login?redirect=${to.path}`)
@@ -45,7 +51,7 @@ router.beforeEach(async(to, from, next) => {
       }
     }
   } else {
-    /* has no token*/
+    /* 没有token*/
 
     if (whiteList.indexOf(to.path) !== -1) {
       // in the free login whitelist, go directly

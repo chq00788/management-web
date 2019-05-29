@@ -29,6 +29,7 @@ import Layout from '@/layout'
  * constantRoutes
  * a base page that does not have permission requirements
  * all roles can be accessed
+ * 不需要权限的基础页面，所有角色都可以访问
  */
 export const constantRoutes = [
   {
@@ -36,7 +37,6 @@ export const constantRoutes = [
     component: () => import('@/views/login/index'),
     hidden: true
   },
-
   {
     path: '/404',
     component: () => import('@/views/404'),
@@ -54,127 +54,6 @@ export const constantRoutes = [
       meta: { title: '首页', icon: 'dashboard' }
     }]
   },
-
-  {
-    path: '/system',
-    component: Layout,
-    redirect: '/system/user',
-    name: 'System',
-    meta: { title: '系统管理', icon: 'example' },
-    children: [
-      {
-        path: 'user',
-        name: 'User',
-        component: () => import('@/views/system/user/index'),
-        meta: { title: '用户管理', icon: 'user' }
-      },
-      {
-        path: 'role',
-        name: 'Role',
-        component: () => import('@/views/system/role/role'),
-        meta: { title: '角色管理', icon: 'tree' }
-      },
-      {
-        path: 'perm',
-        name: 'Perm',
-        component: () => import('@/views/system/perm/index'),
-        meta: { title: '权限管理', icon: 'tree' }
-      }
-    ]
-  },
-  {
-    path: '/example',
-    component: Layout,
-    redirect: '/example/table',
-    name: 'Example',
-    meta: { title: 'Example', icon: 'example' },
-    children: [
-      {
-        path: 'table',
-        name: 'Table',
-        component: () => import('@/views/table/index'),
-        meta: { title: 'Table', icon: 'table' }
-      },
-      {
-        path: 'tree',
-        name: 'Tree',
-        component: () => import('@/views/tree/index'),
-        meta: { title: 'Tree', icon: 'tree' }
-      }
-    ]
-  },
-
-  {
-    path: '/form',
-    component: Layout,
-    children: [
-      {
-        path: 'index',
-        name: 'Form',
-        component: () => import('@/views/form/index'),
-        meta: { title: 'Form', icon: 'form' }
-      }
-    ]
-  },
-
-  {
-    path: '/nested',
-    component: Layout,
-    redirect: '/nested/menu1',
-    name: 'Nested',
-    meta: {
-      title: 'Nested',
-      icon: 'nested'
-    },
-    children: [
-      {
-        path: 'menu1',
-        component: () => import('@/views/nested/menu1/index'), // Parent router-view
-        name: 'Menu1',
-        meta: { title: 'Menu1' },
-        children: [
-          {
-            path: 'menu1-1',
-            component: () => import('@/views/nested/menu1/menu1-1'),
-            name: 'Menu1-1',
-            meta: { title: 'Menu1-1' }
-          },
-          {
-            path: 'menu1-2',
-            component: () => import('@/views/nested/menu1/menu1-2'),
-            name: 'Menu1-2',
-            meta: { title: 'Menu1-2' },
-            children: [
-              {
-                path: 'menu1-2-1',
-                component: () => import('@/views/nested/menu1/menu1-2/menu1-2-1'),
-                name: 'Menu1-2-1',
-                meta: { title: 'Menu1-2-1' }
-              },
-              {
-                path: 'menu1-2-2',
-                component: () => import('@/views/nested/menu1/menu1-2/menu1-2-2'),
-                name: 'Menu1-2-2',
-                meta: { title: 'Menu1-2-2' }
-              }
-            ]
-          },
-          {
-            path: 'menu1-3',
-            component: () => import('@/views/nested/menu1/menu1-3'),
-            name: 'Menu1-3',
-            meta: { title: 'Menu1-3' }
-          }
-        ]
-      },
-      {
-        path: 'menu2',
-        component: () => import('@/views/nested/menu2/index'),
-        meta: { title: 'menu2' }
-      }
-    ]
-  },
-
   {
     path: 'external-link',
     component: Layout,
@@ -184,12 +63,46 @@ export const constantRoutes = [
         meta: { title: 'External Link', icon: 'link' }
       }
     ]
-  },
-
-  // 404 page must be placed at the end !!!
-  { path: '*', redirect: '/404', hidden: true }
+  }
 ]
-
+/**
+ * 异步挂载的路由,动态需要根据权限加载的路由表
+ */
+export const asyncRoutes = [
+  {
+    path: '/system',
+    component: Layout,
+    redirect: '/system/user',
+    alwaysShow: true, // will always show the root menu
+    name: 'System',
+    meta: { title: '系统管理', icon: 'example', roles: ['system'] },
+    children: [
+      {
+        path: 'user',
+        name: 'User',
+        component: () => import('@/views/system/user/index'),
+        meta: { title: '用户管理', roles: ['system:user'] }
+      },
+      {
+        path: 'role',
+        name: 'Role',
+        component: () => import('@/views/system/role/role'),
+        meta: { title: '角色管理', roles: ['system:role'] }
+      },
+      {
+        path: 'perm',
+        name: 'Perm',
+        component: () => import('@/views/system/perm/index'),
+        meta: { title: '权限管理', roles: ['system:perm'] }
+      }
+    ]
+  },
+  // 404 页面一定要最后加载
+  { path: '*', redirect: '/404', hidden: true }]
+/**
+ * 实例化vue的时候只挂载constantRouter
+ * @returns {VueRouter}
+ */
 const createRouter = () => new Router({
   // mode: 'history', // require service support
   scrollBehavior: () => ({ y: 0 }),
